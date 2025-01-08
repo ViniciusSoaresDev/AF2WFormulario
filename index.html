@@ -15,7 +15,7 @@
         .container {
             display: flex;
             justify-content: space-between;
-            width: 98%; /* Define o tamanho total do conteúdo */
+            width: 98%;
         }
         .biblioteca {
             width: 300px;
@@ -26,76 +26,134 @@
             background-color: #f0f0f0;
         }
         .area-desenho {
-            width: 610px;
+            width: 1060px;
             height: 620px;
             border: 2px dashed #000;
             position: relative;
             background-color: #e0e0e0;
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(12, 1fr);
+            gap: 10px;
+        }
+        .area-desenho::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(0deg, transparent 1px, rgba(0, 0, 0, 0.2) 1px), 
+                        linear-gradient(90deg, transparent 1px, rgba(0, 0, 0, 0.2) 1px);
+            background-size: 50px 50px; /* Tamanho da célula da grade */
+            z-index: 1;
         }
         .item {
-            width: 100px;
-            height: 100px;
+            width: 95px;
+            height: 95px;
             margin-bottom: 20px;
             background-color: transparent;
             text-align: center;
-            line-height: 100px;
+            line-height: 50px;
             cursor: move;
             user-select: none;
         }
+        .item .bomba {
+            transform: scale(0.9);
+            margin-top: 15px;
+            margin-left: 15px;
+        }
+
+        /* Tubulação horizontal */
+        .tubulacao-horizontal {
+            width: 100px;
+            height: 10px;
+            background: linear-gradient(180deg, #545c63, #7e7d7d);
+            border-radius: 5px;
+        }
+
+        /* Tubulação vertical */
+        .tubulacao-vertical {
+            width: 10px;
+            height: 100px;
+            background-color: #2d414e;
+            border-radius: 5px;
+        }
+
         .arrastado {
             position: absolute;
             width: 100px;
             height: 100px;
-            background-color: lightgreen;
+            background-color: transparent;
             text-align: center;
-            line-height: 100px;
-            border: 1px solid #000;
+            line-height: 50px;
+            border: 1px dashed rgb(0, 0, 0);
             cursor: move;
+            z-index: 10;
         }
 
         /* Estilos para o desenho da bomba */
         .bomba {
-            width: 80px;
-            height: 80px;
-            border-radius: 60%;
-            background-color: #2d414e; /* Cor do círculo externo */
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #2d414e;
+            margin-top: 50%;
+            margin-left: 50%;
+            transform: translate(-50%,-50%);
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 1;
         }
 
         .inner-circle {
-            width: 40px;
-            height: 40px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
-            background-color: #535f66; /* Cor do círculo interno */
+            background-color: #535f66;
             z-index: 2;
         }
 
-        .rectangle {
+        .rectangle-out {
             position: absolute;
-            top: 0px; /* Ajusta a posição para acima do círculo maior */
-            left: 80px;
-            transform: translateX(-40%);
+            top: 0px;
+            left: 95%;
+            transform: translateX(-50%);
             width: 50px;
-            height: 25px;
-            background-color: #2d414e; /* Cor do retângulo */
+            height: 15px;
+            background-color: #2d414e;
+            z-index: 1;
+        }
+        .rectangle-in {
+            position: absolute;
+            top: 45px;
+            left: 8%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 15px;
+            background-color: #2d414e;
             z-index: 1;
         }
     </style>
 </head>
 <body>
-    
     <div class="container">
         <div class="biblioteca">
             <div class="item" id="grupo1" draggable="true">
                 <div class="bomba">
-                    <div class="rectangle"></div>
+                    <div class="rectangle-out"></div>
                     <div class="inner-circle"></div>
+                    <div class="rectangle-in"></div>
                 </div>
             </div>
-            <div class="item" id="grupo2" draggable="true">Grupo 2</div>
-            <div class="item" id="grupo3" draggable="true">Grupo 3</div>
+            <div class="item" id="grupo2" draggable="true">
+                <div class="tubulacao-horizontal"></div>
+            </div>
+            <div class="item" id="grupo3" draggable="true">
+                <div class="tubulacao-vertical"></div>
+            </div>
         </div>
 
         <div class="area-desenho" id="areaDesenho"></div>
@@ -104,34 +162,112 @@
     <script>
         const items = document.querySelectorAll('.item');
         const areaDesenho = document.getElementById('areaDesenho');
-
-        // Função para lidar com o evento de arrastar
+        const gridSize = 50; // Tamanho das células da grade
+    
+        let draggedItem = null; // Variável para armazenar o item sendo arrastado
+        let isDragging = false; // Verifica se está arrastando um item
+        let offsetX, offsetY; // Variáveis para armazenar o offset do mouse
+    
+        // Função para "grudar" o item na grade
+        function snapToGrid(x, y) {
+            const snappedX = Math.round(x / gridSize) * gridSize;
+            const snappedY = Math.round(y / gridSize) * gridSize;
+            return { x: snappedX, y: snappedY };
+        }
+    
+        // Função para verificar se o item está dentro dos limites da área de desenho
+        function isWithinBounds(x, y, width, height) {
+            const areaRect = areaDesenho.getBoundingClientRect();
+            return (
+                x >= 0 &&
+                y >= 0 &&
+                x + width <= areaRect.width &&
+                y + height <= areaRect.height
+            );
+        }
+    
+        // Adicionar evento de dragstart nos itens da biblioteca
         items.forEach(item => {
-            item.addEventListener('dragstart', function(e) {
-                e.dataTransfer.setData('text', item.id); // Armazena o ID do item arrastado
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                e.dataTransfer.setData('text/plain', item.id); // Armazenar o ID do item arrastado
             });
         });
-
-        // Permitir que o item seja soltado na área de desenho
-        areaDesenho.addEventListener('dragover', function(e) {
-            e.preventDefault(); // Necessário para permitir o drop
+    
+        // Evento de dragover para permitir o drop
+        areaDesenho.addEventListener('dragover', function (e) {
+            e.preventDefault(); // Impede o comportamento padrão e permite o drop
         });
-
-        // Quando o item for solto, será colocado na posição do mouse na área de desenho
-        areaDesenho.addEventListener('drop', function(e) {
-            e.preventDefault();
-
-            const itemId = e.dataTransfer.getData('text');
-            const item = document.getElementById(itemId);
+    
+        // Evento de drop para adicionar o item na área de desenho
+        areaDesenho.addEventListener('drop', function (e) {
+            e.preventDefault(); // Impede o comportamento padrão
+    
+            const itemId = e.dataTransfer.getData('text'); // Recupera o ID do item arrastado
+            const item = document.getElementById(itemId); // Recupera o item
+            const areaRect = areaDesenho.getBoundingClientRect(); // Posição da área de desenho
+    
+            // Criação do novo item na área de desenho
             const newItem = document.createElement('div');
-
             newItem.classList.add('arrastado');
-            newItem.innerHTML = item.innerHTML; // Copia o conteúdo do item arrastado (incluindo o desenho)
-            newItem.style.left = `${e.offsetX - 50}px`; // Ajuste para o item se posicionar corretamente
-            newItem.style.top = `${e.offsetY - 50}px`; // Ajuste para o item se posicionar corretamente
-
-            areaDesenho.appendChild(newItem);
+            newItem.innerHTML = item.innerHTML;
+    
+            const x = e.clientX - areaRect.left - 25; // Calcula a posição X do drop
+            const y = e.clientY - areaRect.top - 25;  // Calcula a posição Y do drop
+    
+            if (!isWithinBounds(x, y, 47.5, 47.5)) {
+                alert('O objeto está fora da área de desenho!');
+                return;
+            }
+    
+            const { x: snappedX, y: snappedY } = snapToGrid(x, y);
+    
+            newItem.style.left = `${snappedX}px`;
+            newItem.style.top = `${snappedY}px`;
+            areaDesenho.appendChild(newItem); // Adiciona o item à área de desenho
+        });
+    
+        // Tornar os itens da área de desenho arrastáveis
+        areaDesenho.addEventListener('mousedown', (e) => {
+            const target = e.target;
+            if (target.classList.contains('arrastado')) {
+                const rect = target.getBoundingClientRect();
+    
+                // Calcular o offset para o movimento
+                offsetX = e.clientX - rect.left; // Deslocamento baseado na posição do item
+                offsetY = e.clientY - rect.top;   // Deslocamento baseado na posição do item
+    
+                // Função para mover o item ao arrastá-lo
+                function moveItem(e) {
+                    if (!isDragging) {
+                        isDragging = true;
+                    }
+    
+                    // Cálculo da nova posição com base no mouse
+                    const x = e.clientX - 350;
+                    const y = e.clientY - offsetY;
+    
+                    const { x: snappedX, y: snappedY } = snapToGrid(x, y);
+    
+                    if (isWithinBounds(snappedX, snappedY, 47.5, 47.5)) {
+                        target.style.left = `${snappedX}px`;
+                        target.style.top = `${snappedY}px`;
+                    }
+                }
+    
+                // Função de "dragend" para parar o movimento
+                function stopDragging() {
+                    document.removeEventListener('mousemove', moveItem);
+                    document.removeEventListener('mouseup', stopDragging);
+                    isDragging = false;
+                }
+    
+                // Adicionar os eventos de movimento e soltar
+                document.addEventListener('mousemove', moveItem);
+                document.addEventListener('mouseup', stopDragging);
+            }
         });
     </script>
+    
 </body>
 </html>
