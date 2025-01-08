@@ -3,39 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulário de Automação de Saneamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 98%; /* Define o tamanho total do conteúdo */
+        }
+        .biblioteca {
+            width: 300px;
+            height: 600px;
+            margin-right: 20px;
+            border: 2px solid #000;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .area-desenho {
+            width: 610px;
+            height: 620px;
+            border: 2px dashed #000;
+            position: relative;
+            background-color: #e0e0e0;
+        }
+        .item {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            background-color: transparent;
+            text-align: center;
+            line-height: 100px;
+            cursor: move;
+            user-select: none;
+        }
+        .arrastado {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-color: lightgreen;
+            text-align: center;
+            line-height: 100px;
+            border: 1px solid #000;
+            cursor: move;
+        }
+
+        /* Estilos para o desenho da bomba */
+        .bomba {
+            width: 80px;
+            height: 80px;
+            border-radius: 60%;
+            background-color: #2d414e; /* Cor do círculo externo */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .inner-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #535f66; /* Cor do círculo interno */
+            z-index: 2;
+        }
+
+        .rectangle {
+            position: absolute;
+            top: 0px; /* Ajusta a posição para acima do círculo maior */
+            left: 80px;
+            transform: translateX(-40%);
+            width: 50px;
+            height: 25px;
+            background-color: #2d414e; /* Cor do retângulo */
+            z-index: 1;
+        }
+    </style>
 </head>
 <body>
-    <h1>Formulário de Automação de Saneamento</h1>
-    <form id="formulario">
-        <label for="gruposBombas">Grupos de Bombas:</label>
-        <input type="number" id="gruposBombas" name="gruposBombas" required>
-        <br><br>
+    
+    <div class="container">
+        <div class="biblioteca">
+            <div class="item" id="grupo1" draggable="true">
+                <div class="bomba">
+                    <div class="rectangle"></div>
+                    <div class="inner-circle"></div>
+                </div>
+            </div>
+            <div class="item" id="grupo2" draggable="true">Grupo 2</div>
+            <div class="item" id="grupo3" draggable="true">Grupo 3</div>
+        </div>
 
-        <div id="gruposDetails"></div>
-
-        <button type="submit">Enviar</button>
-    </form>
+        <div class="area-desenho" id="areaDesenho"></div>
+    </div>
 
     <script>
-        document.getElementById('gruposBombas').addEventListener('input', function() {
-            const grupos = document.getElementById('gruposBombas').value;
-            const gruposDetails = document.getElementById('gruposDetails');
-            gruposDetails.innerHTML = '';
+        const items = document.querySelectorAll('.item');
+        const areaDesenho = document.getElementById('areaDesenho');
 
-            for (let i = 1; i <= grupos; i++) {
-                gruposDetails.innerHTML += `
-                    <label for="bombasGrupo${i}">Quantidade de Bombas no Grupo ${i}:</label>
-                    <input type="number" id="bombasGrupo${i}" name="bombasGrupo${i}" required>
-                    <br><br>
-                `;
-            }
+        // Função para lidar com o evento de arrastar
+        items.forEach(item => {
+            item.addEventListener('dragstart', function(e) {
+                e.dataTransfer.setData('text', item.id); // Armazena o ID do item arrastado
+            });
         });
 
-        document.getElementById('formulario').addEventListener('submit', function(e) {
+        // Permitir que o item seja soltado na área de desenho
+        areaDesenho.addEventListener('dragover', function(e) {
+            e.preventDefault(); // Necessário para permitir o drop
+        });
+
+        // Quando o item for solto, será colocado na posição do mouse na área de desenho
+        areaDesenho.addEventListener('drop', function(e) {
             e.preventDefault();
-            // Aqui você pode pegar os dados e enviar para o backend
-            alert("Formulário enviado!");
+
+            const itemId = e.dataTransfer.getData('text');
+            const item = document.getElementById(itemId);
+            const newItem = document.createElement('div');
+
+            newItem.classList.add('arrastado');
+            newItem.innerHTML = item.innerHTML; // Copia o conteúdo do item arrastado (incluindo o desenho)
+            newItem.style.left = `${e.offsetX - 50}px`; // Ajuste para o item se posicionar corretamente
+            newItem.style.top = `${e.offsetY - 50}px`; // Ajuste para o item se posicionar corretamente
+
+            areaDesenho.appendChild(newItem);
         });
     </script>
 </body>
