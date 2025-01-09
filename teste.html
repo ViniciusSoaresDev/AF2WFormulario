@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .Container {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            flex: 1;
+            justify-content: flex-start;
+        }
+        .Menu {
+            width: 150px;
+            background-color: #f0f0f0;
+            border-right: 2px solid #000;
+            padding: 20px;
+            display: flex;
+        }
+        .Menu button {
+            background-color: #2d414e;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+        .Menu button:hover {
+            background-color: #3e5b68;
+        }
+        .Library {
+            width: 90%;
+            height: 300px;
+            margin-bottom: 20px;
+            border: 2px solid #000;
+            padding: 10px;
+            background-color: #f0f0f0;
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            gap: 5px;
+            align-items: center;
+            justify-items: center;
+        }
+        .DrawingArea {
+            width: 100%;
+            flex-grow: 1;
+            border: 2px dashed #000;
+            position: relative;
+            background-color: #e0e0e0;
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(12, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .DrawingArea::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(0deg, transparent 1px, rgba(0, 0, 0, 0.2) 1px),
+                        linear-gradient(90deg, transparent 1px, rgba(0, 0, 0, 0.2) 1px);
+            background-size: 50px 50px;
+            z-index: 1;
+        }
+        .item {
+            width: 50px;
+            height: 50px;
+            background-color: transparent;
+            text-align: center;
+            line-height: 25px;
+            cursor: move;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .item .bomba {
+            transform: scale(0.9);
+            margin-top: 15px;
+            margin-left: 15px;
+        }
+        .tubulacao-horizontal {
+            width: 50px;
+            height: 5px;
+            background: linear-gradient(180deg, #545c63, #7e7d7d);
+            border-radius: 5px;
+        }
+        .tubulacao-vertical {
+            width: 5px;
+            height: 50px;
+            background-color: #2d414e;
+            border-radius: 5px;
+        }
+        .arrastado-bomba {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background-color: transparent;
+            text-align: center;
+            line-height: 25px;
+            border: 1px dashed rgb(0, 0, 0);
+            cursor: move;
+            z-index: 10;
+        }
+        .bomba {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #2d414e;
+            margin-top: 50%;
+            margin-left: 50%;
+            transform: translate(-50%,-50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+        }
+        .inner-circle {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #535f66;
+            z-index: 2;
+        }
+        .rectangle-out {
+            position: absolute;
+            top: 0px;
+            left: 95%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 8px;
+            background-color: #2d414e;
+            z-index: 1;
+        }
+        .rectangle-in {
+            position: absolute;
+            top: 25px;
+            left: 8%;
+            transform: translateX(-50%);
+            width: 25px;
+            height: 8px;
+            background-color: #2d414e;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="Container">
+        <div class="Menu">
+            <button id="addPump">Adicionar Bomba</button>
+            <button id="addHorizontalPipe">Adicionar Tubulação Horizontal</button>
+            <button id="addVerticalPipe">Adicionar Tubulação Vertical</button>
+        </div>
+        <div class="Library" id="Library"></div>
+        <div class="DrawingArea" id="AreaToDrawing"></div>
+    </div>
+
+    <script>
+        const addPumpButton = document.getElementById("addPump");
+        const addHorizontalPipeButton = document.getElementById("addHorizontalPipe");
+        const addVerticalPipeButton = document.getElementById("addVerticalPipe");
+        const areaDesenho = document.getElementById('AreaToDrawing');
+        const gridSize = 50;
+
+        let draggedItem = null;
+        let isDragging = false;
+        let offsetX, offsetY;
+
+        function snapToGrid(x, y) {
+            const snappedX = Math.round(x / gridSize) * gridSize;
+            const snappedY = Math.round(y / gridSize) * gridSize;
+            return { x: snappedX, y: snappedY };
+        }
+
+        function isWithinBounds(x, y, width, height) {
+            const areaRect = areaDesenho.getBoundingClientRect();
+            return (
+                x >= 0 &&
+                y >= 0 &&
+                x + width <= areaRect.width &&
+                y + height <= areaRect.height
+            );
+        }
+
+        // Função para adicionar item à biblioteca
+        function createItem(type) {
+            const item = document.createElement("div");
+            item.classList.add("item");
+
+            if (type === "bomba") {
+                const bomba = document.createElement("div");
+                bomba.classList.add("bomba");
+                bomba.innerHTML = '<div class="inner-circle"></div><div class="rectangle-out"></div><div class="rectangle-in"></div>';
+                item.appendChild(bomba);
+            } else if (type === "horizontal") {
+                const tubulacaoHorizontal = document.createElement("div");
+                tubulacaoHorizontal.classList.add("tubulacao-horizontal");
+                item.appendChild(tubulacaoHorizontal);
+            } else if (type === "vertical") {
+                const tubulacaoVertical = document.createElement("div");
+                tubulacaoVertical.classList.add("tubulacao-vertical");
+                item.appendChild(tubulacaoVertical);
+            }
+
+            item.setAttribute("draggable", "true");
+            item.addEventListener("dragstart", (e) => {
+                draggedItem = item;
+                e.dataTransfer.setData("text/plain", item.id);
+            });
+
+            return item;
+        }
+
+        // Adicionar evento para os botões do menu
+        addPumpButton.addEventListener("click", () => {
+            const pumpItem = createItem("bomba");
+            document.getElementById("Library").appendChild(pumpItem);
+        });
+
+        addHorizontalPipeButton.addEventListener("click", () => {
+            const horizontalPipeItem = createItem("horizontal");
+            document.getElementById("Library").appendChild(horizontalPipeItem);
+        });
+
+        addVerticalPipeButton.addEventListener("click", () => {
+            const verticalPipeItem = createItem("vertical");
+            document.getElementById("Library").appendChild(verticalPipeItem);
+        });
+
+        areaDesenho.addEventListener("dragover", function (e) {
+            e.preventDefault();
+        });
+
+        areaDesenho.addEventListener("drop", function (e) {
+            e.preventDefault();
+
+            const itemId = e.dataTransfer.getData("text");
+            const item = document.getElementById(itemId);
+            const areaRect = areaDesenho.getBoundingClientRect();
+
+            const newItem = document.createElement("div");
+            newItem.classList.add("arrastado-bomba");
+            newItem.innerHTML = item.innerHTML;
+
+            const x = e.clientX - areaRect.left - 25;
+            const y = e.clientY - areaRect.top - 25;
+
+            if (!isWithinBounds(x, y, 47.5, 47.5)) {
+                alert("O objeto está fora da área de desenho!");
+                return;
+            }
+
+            const { x: snappedX, y: snappedY } = snapToGrid(x, y);
+
+            newItem.style.left = `${snappedX}px`;
+            newItem.style.top = `${snappedY}px`;
+            areaDesenho.appendChild(newItem);
+        });
+
+        areaDesenho.addEventListener("mousedown", (e) => {
+            const target = e.target;
+            if (target.classList.contains("arrastado-bomba")) {
+                const rect = target.getBoundingClientRect();
+
+                offsetX = e.clientX - rect.left;
+                offsetY = e.clientY - rect.top;
+
+                function moveItem(e) {
+                    if (!isDragging) {
+                        isDragging = true;
+                    }
+
+                    const x = e.clientX - 350;
+                    const y = e.clientY - offsetY;
+
+                    const { x: snappedX, y: snappedY } = snapToGrid(x, y);
+
+                    if (isWithinBounds(snappedX, snappedY, 47.5, 47.5)) {
+                        target.style.left = `${snappedX}px`;
+                        target.style.top = `${snappedY}px`;
+                    }
+                }
+
+                function stopDragging() {
+                    document.removeEventListener("mousemove", moveItem);
+                    document.removeEventListener("mouseup", stopDragging);
+                    isDragging = false;
+                }
+
+                document.addEventListener("mousemove", moveItem);
+                document.addEventListener("mouseup", stopDragging);
+            }
+        });
+    </script>
+</body>
+</html>
