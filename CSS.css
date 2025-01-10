@@ -1,0 +1,193 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Corpo da página */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+    color: #000;
+}
+
+/* Menu */
+.menu {
+    background-color: #000; /* Preto */
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    z-index: 1000;
+}
+
+.menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 20px;
+}
+
+.menu ul li {
+    margin: 0 20px;
+}
+
+.menu ul li a {
+    text-decoration: none;
+    color: #fff; /* Branco */
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px;
+    display: block;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.menu ul li a:hover, .menu ul li a.active {
+    background-color: #008000; /* Verde */
+    border-radius: 5px;
+    color: #fff; /* Branco */
+}
+
+/* Conteúdo principal */
+.content {
+    padding-top: 45px; /* Espaço para o menu fixo */
+}
+
+/* Biblioteca de Imagens */
+.library {
+    margin-top: 20px;
+    width: 100%; /* Ajuste conforme necessário */
+    overflow-x: auto; /* Permite rolagem horizontal */
+    white-space: nowrap; /* Impede que os itens quebrem para a próxima linha */
+}
+
+.category {
+    margin-bottom: 40px;
+}
+
+.category h2 {
+    color: #008000; /* Verde */
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    height: 8vh;
+}
+
+.image-item {
+    display: flex;
+    flex-direction: column; /* Organiza imagem e nome verticalmente */
+    align-items: center; /* Centraliza o conteúdo */
+    width: 10%;
+    text-align: center; /* Centraliza o texto */  
+}
+
+/* Estilo para os ícones da biblioteca */
+.library-image {
+    width: 50%;
+    height: auto;
+    object-fit: cover;
+    border: 2px solid #000; /* Borda para os ícones na biblioteca */
+    border-radius: 5px;
+}
+
+/* Estilo para os ícones na área de desenho */
+.drawing-area .library-image {
+    border: none; /* Remove a borda quando o ícone é adicionado à área de desenho */
+}
+
+.image-name {
+    margin-top: 5px; /* Espaço entre a imagem e o nome */
+    font-size: 14px;
+    color: #000;
+    margin:0;
+}
+
+.library-image:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.drawing-area {
+    width: 80vw;
+    height: 80vh;
+    border: 2px dashed #000;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr); /* 12 colunas de grade, para ajustar ao espaço disponível */
+    grid-template-rows: repeat(9, 1fr);    /* 12 linhas de grade, para ajustar ao espaço disponível */
+    gap: 5px; /* Espaço entre as células da grade */
+    background-color: #fff;
+}
+
+.drawing-area::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px), 
+                      linear-gradient(180deg, rgba(0,0,0,.1) 1px, transparent 1px);
+    background-size: 6% 14%; /* Tamanho das células da grade */
+    pointer-events: none;
+}
+
+.drawing-area .image-item {
+    position: absolute;
+    cursor: move;
+    z-index: 10; /* Para que o item fique acima da grade */
+    width: 90%; /* Ajusta o tamanho do item para caber na grade */
+}
+
+/* Ajuste de alinhamento automático para os ícones */
+.drawing-area .library-image {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.selected {
+    border: 2px solid red; /* Um exemplo simples de destaque, pode ser customizado */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.control-buttons {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 10px;
+  }
+  
+  button {
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  
+  #move-button {
+    background-color: #f1f1f1; /* Cor padrão */
+    color: #000; /* Cor do texto padrão */
+    border: 1px solid #ccc; /* Borda padrão */
+}
+
+#move-button.active {
+    background-color: #4CAF50;  /* Cor verde quando ativado */
+    color: white;  /* Cor do texto para contraste */
+}
+
+.library-image.large-instrument {
+    width: calc(2 * 6%);  /* 2 células na horizontal */
+    height: calc(3 * 14%); /* 3 células na vertical */
+}
