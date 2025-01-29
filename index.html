@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menu AF2W</title>
     <link rel="stylesheet" href="CSS.css">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
     <div class="menu">
@@ -129,25 +130,16 @@
         </div>
     </div>
 
-    <!-- Controles de Mover e Deletar -->
+    <!-- Controles -->
     <div class="controls">
         <button id="move-button">Move</button>
         <button id="delete-button">Delete</button>
+        <button id="save-screenshot">Salvar Tela</button>
+        <button id="load-screenshot">Carregar Tela</button> <!-- Opcional -->
     </div>
-
-    <!-- Controles de Salvar e Carregar -->
-    <div class="controls">
-        <button id="save-button" onclick="saveImageToLocalStorage('data:image/png;base64,...')">Salvar no LocalStorage</button>
-        <button id="load-button" onclick="loadImageFromLocalStorage()">Carregar do LocalStorage</button>
-        <button id="save-as-file" onclick="saveImageAsFile('data:image/png;base64,...')">Salvar como PNG</button>
-        <button id="save-as-json" onclick="saveImageAsJSON('data:image/png;base64,...')">Salvar como JSON</button>
-        <button id="clear-button" onclick="clearSavedImage()">Limpar Imagem</button>
-    </div>
-
-    <!-- Input para carregar imagem do arquivo JSON -->
-    <input type="file" id="file-input" onchange="loadImageFromJSONFile(this)" accept=".json">
 
     <script src="script.js"></script>
     <script src="storage.js"></script>
+    <script src="responsive.js"></script>
 </body>
 </html>

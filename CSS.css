@@ -10,6 +10,9 @@ body {
     font-family: Arial, sans-serif;
     background-color: #fff;
     color: #000;
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Garante que o body ocupe toda a altura da tela */
 }
 
 /* Menu */
@@ -56,78 +59,73 @@ body {
 
 /* Conteúdo principal */
 .content {
-    padding-top: 45px; /* Espaço para o menu fixo */
+    display: flex;
+    flex: 1; /* Ocupa o espaço restante da tela */
+    padding-top: 60px; /* Espaço para o menu fixo */
 }
 
 /* Biblioteca de Imagens */
 .library {
-    margin-top: 20px;
-    width: 100%; /* Ajuste conforme necessário */
-    overflow-x: auto; /* Permite rolagem horizontal */
-    white-space: nowrap; /* Impede que os itens quebrem para a próxima linha */
+    width: 25%; /* 25% da largura da tela */
+    height: calc(100vh - 60px); /* Altura total menos a altura do menu */
+    overflow-y: auto; /* Permite rolagem vertical */
+    padding: 10px;
+    background-color: #f9f9f9; /* Fundo claro para a biblioteca */
+    border-right: 2px solid #ddd; /* Linha de separação */
 }
 
 .category {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
 
 .category h2 {
     color: #008000; /* Verde */
-    font-size: 24px;
+    font-size: 20px;
     margin-bottom: 10px;
 }
 
 .images {
     display: flex;
     flex-wrap: wrap;
-    gap: 2px;
-    height: 8vh;
+    gap: 10px;
 }
 
 .image-item {
     display: flex;
-    flex-direction: column; /* Organiza imagem e nome verticalmente */
-    align-items: center; /* Centraliza o conteúdo */
-    width: 10%;
-    text-align: center; /* Centraliza o texto */  
+    flex-direction: column;
+    align-items: center;
+    width: 100px; /* Largura fixa para os itens da biblioteca */
+    text-align: center;
 }
 
-/* Estilo para os ícones da biblioteca */
 .library-image {
-    width: 50%;
+    width: 100%;
     height: auto;
     object-fit: cover;
     border: 2px solid #000; /* Borda para os ícones na biblioteca */
     border-radius: 5px;
-}
-
-/* Estilo para os ícones na área de desenho */
-.drawing-area .library-image {
-    border: none; /* Remove a borda quando o ícone é adicionado à área de desenho */
-}
-
-.image-name {
-    margin-top: 5px; /* Espaço entre a imagem e o nome */
-    font-size: 14px;
-    color: #000;
-    margin:0;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .library-image:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
+.image-name {
+    margin-top: 5px;
+    font-size: 14px;
+    color: #000;
+}
+
+/* Área de Desenho */
 .drawing-area {
-    width: 80vw;
-    height: 80vh;
-    border: 2px dashed #000;
+    flex: 1; /* Ocupa o espaço restante */
     position: relative;
-    display: grid;
-    grid-template-columns: repeat(12, 1fr); /* 12 colunas de grade, para ajustar ao espaço disponível */
-    grid-template-rows: repeat(9, 1fr);    /* 12 linhas de grade, para ajustar ao espaço disponível */
-    gap: 5px; /* Espaço entre as células da grade */
+    border: 2px dashed #000;
     background-color: #fff;
+    overflow: hidden; /* Impede que o conteúdo ultrapasse os limites */
 }
 
 .drawing-area::before {
@@ -137,57 +135,81 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: linear-gradient(90deg, rgba(0,0,0,.1) 1px, transparent 1px), 
-                      linear-gradient(180deg, rgba(0,0,0,.1) 1px, transparent 1px);
+    background-image: linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                      linear-gradient(180deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
     background-size: 6% 14%; /* Tamanho das células da grade */
     pointer-events: none;
 }
 
-.drawing-area .image-item {
+.drawing-image {
     position: absolute;
+    user-select: none; /* Impede a seleção de texto/imagem */
+    pointer-events: auto; /* Garante que a imagem responda a eventos de mouse */
+    -webkit-user-drag: none; /* Impede o arrastar no WebKit (Chrome, Safari) */
+    -moz-user-select: none; /* Impede a seleção no Firefox */
+    -ms-user-select: none; /* Impede a seleção no Edge */
     cursor: move;
-    z-index: 10; /* Para que o item fique acima da grade */
-    width: 90%; /* Ajusta o tamanho do item para caber na grade */
-}
-
-/* Ajuste de alinhamento automático para os ícones */
-.drawing-area .library-image {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
 }
 
 .selected {
-    border: 2px solid red; /* Um exemplo simples de destaque, pode ser customizado */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 2px solid red; /* Destaque para a imagem selecionada */
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
 }
 
-.control-buttons {
-    position: absolute;
-    top: 10px;
-    left: 10px;
+/* Controles */
+.controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: #000; /* Preto */
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 10px;
-  }
-  
-  button {
-    padding: 10px;
-    font-size: 14px;
+    z-index: 1000;
+}
+
+.controls button {
+    padding: 10px 20px;
+    font-size: 16px;
     cursor: pointer;
-  }
-  
-  #move-button {
-    background-color: #f1f1f1; /* Cor padrão */
-    color: #000; /* Cor do texto padrão */
-    border: 1px solid #ccc; /* Borda padrão */
+    border: none;
+    border-radius: 5px;
+    background-color: #008000; /* Verde */
+    color: #fff; /* Branco */
+    transition: background-color 0.3s;
+}
+
+.controls button:hover {
+    background-color: #006400; /* Verde mais escuro */
 }
 
 #move-button.active {
-    background-color: #4CAF50;  /* Cor verde quando ativado */
-    color: white;  /* Cor do texto para contraste */
+    background-color: #4CAF50; /* Verde claro */
 }
 
-.library-image.large-instrument {
-    width: calc(2 * 6%);  /* 2 células na horizontal */
-    height: calc(3 * 14%); /* 3 células na vertical */
+/* Ajustes para dispositivos móveis */
+@media (max-width: 768px) {
+    .content {
+        flex-direction: column;
+    }
+
+    .library {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-bottom: 2px solid #ddd;
+    }
+
+    .drawing-area {
+        height: 60vh; /* Altura fixa para dispositivos móveis */
+    }
+
+    .controls {
+        position: static;
+        height: auto;
+        padding: 10px;
+    }
 }
